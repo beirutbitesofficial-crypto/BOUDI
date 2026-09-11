@@ -113,22 +113,31 @@ export async function openBarcodeCamera({title='Scan Barcode',onScan,continuous=
 
   let stopped=false;
   let running=false;
+  let delivering=false;
   let lastCode='';
   let lastAt=0;
 
   const deliver=async decoded=>{
+    // Camera libraries can report more than one frame before stop() completes.
+    // Only let one decoded value reach the POS at a time.
+    if(delivering||stopped)return false;
     const code=normalizeBarcode(decoded);
     const now=Date.now();
     if(!code||(code===lastCode&&now-lastAt<1200))return true;
+    delivering=true;
     lastCode=code;lastAt=now;
     status.textContent=`Scanned: ${code}`;
     navigator.vibrate?.(70);
-    const keep=await onScan?.(code,'camera');
-    if(!continuous||keep===false){
-      await halt(true);
-      return false;
+    try{
+      const keep=await onScan?.(code,'camera');
+      if(!continuous||keep===false){
+        await halt(true);
+        return false;
+      }
+      return true;
+    }finally{
+      if(!stopped)delivering=false;
     }
-    return true;
   };
 
   const halt=async(remove=true)=>{
