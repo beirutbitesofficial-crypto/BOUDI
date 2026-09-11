@@ -1,0 +1,45 @@
+:root{--accent:#ff7a00;--black:#0b0b0d}
+body.route-pos{overflow:hidden}.content:has(.pos-fixed-layout){padding:12px;overflow:hidden;height:calc(100vh - 72px)}
+.pos-fixed-layout{display:grid;grid-template-columns:1fr 1fr;gap:12px;height:100%;min-height:0}
+.pos-half{min-width:0;min-height:0;border:1px solid var(--border);border-radius:16px;background:var(--card);padding:12px;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+.pos-scroll{overflow:auto;min-height:0;overscroll-behavior:contain}.pos-products .product-grid{flex:1;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:9px}
+.product-tile{min-height:190px;padding:10px;color:#fff;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:6px;overflow:hidden}.product-tile img{width:100%;height:105px;object-fit:contain;border-radius:10px;background:#17191f}.product-tile .pt-name,.product-tile .pt-price,.product-tile .pt-stock{display:block;color:#fff;text-shadow:0 1px 2px #000;line-height:1.25}.product-tile .pt-name{font-size:14px;margin:0;overflow-wrap:anywhere}.product-tile .pt-price{font-size:13px;margin:0}.product-tile .pt-stock{font-size:11px;margin:0}.product-tile .pt-emoji{font-size:42px;min-height:105px;display:grid;place-items:center}.pos-cart .cart-items{flex:1}
+.pos-actions{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:8px}.pay-toggle{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0}.pay-toggle .pay-opt{min-height:48px;border:2px solid var(--border-2);border-radius:11px;background:#232630;color:#fff;font-size:16px;font-weight:800;cursor:pointer}.pay-toggle .pay-opt.paid{border-color:#2ecc71}.pay-toggle .pay-opt.unpaid{border-color:#ff6767}.pay-toggle .pay-opt.active.paid{background:#168347;color:#fff;box-shadow:0 0 0 3px rgba(46,204,113,.2)}.pay-toggle .pay-opt.active.unpaid{background:#a92f3d;color:#fff;box-shadow:0 0 0 3px rgba(255,103,103,.2)}.confirm-sale{position:sticky;bottom:0;min-height:48px;background:var(--accent);color:#000;font-weight:800}
+.gaming-progress{min-height:30px;padding:7px;border-radius:9px;background:#2a2020;color:#ffad66;text-align:center;font-weight:800}.gaming-progress.ready{background:#153c29;color:#65df9a}
+.supplier-form,.card{margin-bottom:12px}.supplier-row{display:grid;grid-template-columns:1.2fr 1.5fr .7fr .8fr auto;gap:8px;align-items:center;margin:7px 0}.history-line{display:grid;grid-template-columns:1.5fr .6fr 1fr 1fr 1fr;gap:8px;padding:8px;border-bottom:1px solid var(--border)}
+.link-btn{border:0;background:none;color:var(--accent);cursor:pointer;font-weight:800}.receipt{text-align:center;color:#111;background:#fff;padding:20px}
+.product-admin-card{min-width:0;color:#fff}.product-admin-card img,.product-image-fallback{width:100%;height:145px;object-fit:contain;border-radius:10px;background:#17191f}.product-image-fallback{display:grid;place-items:center;font-size:52px}.product-admin-card h3,.product-admin-card p{color:#fff}.product-card-actions{display:flex;gap:7px;flex-wrap:wrap}.content>.product-grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+.whatsapp-btn{background:#25d366;border-color:#25d366;color:#071b0d;font-weight:800}.whatsapp-btn:hover{background:#20bd5a;border-color:#20bd5a}
+@media(max-width:900px){body.route-pos{overflow:auto}.content:has(.pos-fixed-layout){height:auto;overflow:visible}.pos-fixed-layout{grid-template-columns:1fr;height:auto}.pos-half{min-height:70vh}.supplier-row{grid-template-columns:1fr 1fr}.pos-actions{grid-template-columns:1fr}}
+@media print{body *{visibility:hidden}.modal-overlay,.modal-overlay *{visibility:visible}.modal-overlay{position:absolute;inset:0;background:#fff}.modal{box-shadow:none;border:0}}
+
+/* Touch-first POS controls */
+.pos-fixed-layout button,.pos-fixed-layout input,.pos-fixed-layout textarea{touch-action:manipulation}
+.pos-fixed-layout .pill-tabs{min-height:54px;overflow-x:auto;flex-wrap:nowrap}
+.pos-fixed-layout .pill-tabs button{min-width:86px;min-height:50px;padding:12px 18px;font-size:16px;font-weight:800;white-space:nowrap}
+.pos-products>input,.pos-cart>input,.pos-cart>textarea,.pos-cart>input[type="number"]{min-height:52px;font-size:17px;padding:12px 14px}
+.product-tile{min-height:205px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.product-tile:active{transform:scale(.97);border-color:var(--accent);background:#34303a}
+.product-tile .pt-name{font-size:16px}.product-tile .pt-price{font-size:15px}.product-tile .pt-stock{font-size:13px}
+.cart-line{display:grid;grid-template-columns:minmax(90px,1fr) auto minmax(95px,.65fr) minmax(105px,.75fr) 52px;gap:8px;align-items:center;padding:10px 2px}
+.cart-item-name{font-size:15px;overflow-wrap:anywhere}.cart-qty-control{display:grid;grid-template-columns:50px 58px 50px;gap:4px;align-items:center}
+.cart-touch-btn,.cart-remove{min-width:50px;min-height:50px;border:1px solid var(--border-2);border-radius:11px;background:#30343f;color:#fff;font-size:25px;font-weight:900;cursor:pointer}
+.cart-touch-btn:active,.cart-remove:active{transform:scale(.94);background:var(--accent);color:#111}.cart-remove{background:#512a31;color:#ff9da5}
+.cart-qty-value,.cart-price{height:50px;min-width:0;padding:7px;text-align:center;font-size:16px;font-weight:800}.cart-line-total{font-size:14px;font-weight:800;text-align:right}
+.pay-toggle .pay-opt,.confirm-sale,.pos-actions .btn{min-height:58px;font-size:17px}.pay-toggle .pay-opt{font-size:19px}
+.pos-actions{position:sticky;bottom:0;background:var(--card);padding-top:4px;z-index:3}
+@media(max-width:1200px){.cart-line{grid-template-columns:minmax(75px,1fr) auto minmax(80px,.65fr) 50px}.cart-line-total{grid-column:1/-1;text-align:right}.cart-qty-control{grid-template-columns:46px 52px 46px}.cart-touch-btn,.cart-remove{min-width:46px}}
+@media(pointer:coarse){.pos-half{gap:9px}.product-tile{min-height:215px}.pay-toggle .pay-opt,.confirm-sale,.pos-actions .btn{min-height:62px}}
+
+/* Fully touchable product side */
+.currency-toggle{min-width:106px;font-weight:800;white-space:nowrap}
+.pos-products .pos-scroll{-webkit-overflow-scrolling:touch;touch-action:pan-y;scrollbar-gutter:stable}
+.pos-products .product-grid{grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:12px;padding:2px 4px 18px 2px}
+.pos-products .product-tile{min-height:230px;padding:12px;border-width:2px;border-radius:15px;touch-action:pan-y}
+.pos-products .product-tile img{height:125px;pointer-events:none}.pos-products .product-tile>*{pointer-events:none}
+.pos-products .product-tile .pt-name{font-size:17px}.pos-products .product-tile .pt-price{font-size:16px}.pos-products .product-tile .pt-stock{font-size:14px}
+.pos-products>input{width:100%;min-height:56px;font-size:18px;border-width:2px}
+.pos-products .pill-tabs button{min-height:54px;font-size:17px}
+@media(pointer:coarse){.pos-products .product-grid{grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:14px}.pos-products .product-tile{min-height:240px}.pos-products .product-tile:active{transform:scale(.95);box-shadow:0 0 0 4px rgba(255,122,0,.35)}}
+@media(max-width:1050px){.pos-products .product-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
+.open-order-bar{display:flex;gap:8px;overflow-x:auto;min-height:54px;-webkit-overflow-scrolling:touch}.open-order-touch{min-height:48px;min-width:max-content;padding:10px 14px;font-size:15px;font-weight:800}
