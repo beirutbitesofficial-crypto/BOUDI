@@ -1,0 +1,16 @@
+node_modules/
+.pnpm-store/
+.npm-cache/
+data/friendcafe.db
+data/friendcafe.db-wal
+data/friendcafe.db-shm
+data/uploads/*
+!data/uploads/.gitkeep
+.DS_Store
+._*
+npm-debug.log*
+friend-cafe-hostinger-ready.zip
+friend-cafe-hostinger-redeploy.zip
+Friend-Cafe-POS.zip
+dist/
+publish_github_contents.sh
