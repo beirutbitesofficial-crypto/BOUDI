@@ -1,6 +1,8 @@
 import {el,modal,toast} from './ui.js';
 
-export function normalizeBarcode(value){return String(value||'').trim().replace(/\s+/g,'');}
+export function normalizeBarcode(value){
+  return String(value||'').trim().replace(/\s+/g,'');
+}
 
 export function attachHardwareBarcodeScanner(onScan,{isActive=()=>true,minLength=3}={}){
   let buffer='',last=0;
@@ -28,81 +30,181 @@ export function attachHardwareBarcodeScanner(onScan,{isActive=()=>true,minLength
 }
 
 let html5Loader=null;
-function loadHtml5Qrcode(){
-  if(window.Html5Qrcode)return Promise.resolve();
-  if(html5Loader)return html5Loader;
-  html5Loader=new Promise((resolve,reject)=>{
+
+function loadScript(src){
+  return new Promise((resolve,reject)=>{
     const script=document.createElement('script');
-    script.src='https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js';
+    script.src=src;
     script.async=true;
-    script.onload=()=>window.Html5Qrcode?resolve():reject(new Error('Scanner library did not load'));
-    script.onerror=()=>reject(new Error('Could not load phone scanner library'));
+    script.onload=()=>window.Html5Qrcode?resolve():reject(new Error('Scanner library did not initialize'));
+    script.onerror=()=>reject(new Error('Scanner library could not be loaded'));
     document.head.appendChild(script);
   });
+}
+
+async function loadHtml5Qrcode(){
+  if(window.Html5Qrcode)return;
+  if(!html5Loader){
+    html5Loader=(async()=>{
+      try{
+        await loadScript('/vendor/html5-qrcode.min.js?v=2.3.8-boudi2');
+      }catch(localError){
+        await loadScript('https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js');
+      }
+    })().catch(error=>{html5Loader=null;throw error;});
+  }
   return html5Loader;
 }
 
-async function openHtml5BarcodeCamera({title,onScan,continuous}){
-  try{await loadHtml5Qrcode();}catch(e){toast(e.message,'error');return null;}
-  const id=`barcode-reader-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  const reader=el('div',{id,style:'width:100%;min-height:260px;background:#05070b;border-radius:14px;overflow:hidden'}),status=el('div',{text:'Point the camera at the barcode',style:'margin-top:10px;color:var(--muted);font-weight:700'}),closeBtn=el('button.btn.btn-ghost',{text:'Close'});
-  const m=modal({title,wide:true,body:el('div',{},[reader,status]),footer:closeBtn});
-  const formats=window.Html5QrcodeSupportedFormats?[window.Html5QrcodeSupportedFormats.EAN_13,window.Html5QrcodeSupportedFormats.EAN_8,window.Html5QrcodeSupportedFormats.UPC_A,window.Html5QrcodeSupportedFormats.UPC_E,window.Html5QrcodeSupportedFormats.CODE_128,window.Html5QrcodeSupportedFormats.CODE_39,window.Html5QrcodeSupportedFormats.QR_CODE]:undefined;
-  const scanner=new window.Html5Qrcode(id,formats?{formatsToSupport:formats,verbose:false}:{verbose:false});
-  let stopped=false,lastCode='',lastAt=0;
-  const halt=async(remove=true)=>{if(stopped)return;stopped=true;try{await scanner.stop();}catch{}try{await scanner.clear();}catch{}if(remove)m.close();};
-  closeBtn.onclick=()=>void halt(true);
-  m.overlay.querySelector('.modal-close')?.addEventListener('click',()=>void halt(false));
-  m.overlay.addEventListener('click',e=>{if(e.target===m.overlay)void halt(false);});
-  try{
-    await scanner.start({facingMode:'environment'},{fps:12,qrbox:{width:280,height:160},aspectRatio:1.777},async decoded=>{
-      const code=normalizeBarcode(decoded),now=Date.now();
-      if(!code||(code===lastCode&&now-lastAt<1200))return;
-      lastCode=code;lastAt=now;status.textContent=`Scanned: ${code}`;navigator.vibrate?.(70);
-      const keep=await onScan?.(code,'camera');
-      if(!continuous||keep===false)void halt(true);
-    },()=>{});
-  }catch(e){await halt(true);toast('Camera permission is required to scan barcodes','error');return null;}
-  return{close:()=>halt(true)};
+function cameraErrorMessage(error){
+  const name=String(error?.name||'');
+  const message=String(error?.message||error||'');
+  if(!window.isSecureContext)return 'Phone camera requires HTTPS. Open BOUDI CAFE using the https:// address.';
+  if(name==='NotAllowedError'||/permission|denied/i.test(message))return 'Camera permission is blocked. Allow Camera for this website in your browser settings, then tap Retry Camera.';
+  if(name==='NotFoundError'||/not found|no camera/i.test(message))return 'No camera was found on this device.';
+  if(name==='NotReadableError'||/could not start|in use|track start/i.test(message))return 'The camera is busy in another app. Close the other camera app and try again.';
+  return 'Could not start the camera. Tap Retry Camera or use Take Photo.';
+}
+
+function preferredCamera(cameras){
+  if(!Array.isArray(cameras)||!cameras.length)return null;
+  const rear=cameras.find(c=>/(back|rear|environment|world)/i.test(c.label||''));
+  return rear||cameras[cameras.length-1];
 }
 
 export async function openBarcodeCamera({title='Scan Barcode',onScan,continuous=false}={}){
-  if(!navigator.mediaDevices?.getUserMedia){toast('Camera access is not available on this device','error');return null;}
-  if(!('BarcodeDetector' in window))return openHtml5BarcodeCamera({title,onScan,continuous});
-  let detector;
   try{
-    const supported=typeof BarcodeDetector.getSupportedFormats==='function'?await BarcodeDetector.getSupportedFormats().catch(()=>[]):[];
-    const wanted=['ean_13','ean_8','upc_a','upc_e','code_128','code_39','qr_code'].filter(x=>!supported.length||supported.includes(x));
-    detector=new BarcodeDetector(wanted.length?{formats:wanted}:undefined);
-  }catch(e){return openHtml5BarcodeCamera({title,onScan,continuous});}
-  const video=el('video',{autoplay:'',playsinline:'',muted:'',style:'width:100%;max-height:58vh;background:#05070b;border-radius:14px;object-fit:cover'}),status=el('div',{text:'Point the camera at the barcode',style:'margin-top:10px;color:var(--muted);font-weight:700'}),closeBtn=el('button.btn.btn-ghost',{text:'Close'});
-  const m=modal({title,wide:true,body:el('div',{},[video,status]),footer:closeBtn});
-  let stream=null,stopped=false,lastCode='',lastAt=0,raf=0;
-  const stop=()=>{if(stopped)return;stopped=true;cancelAnimationFrame(raf);if(stream)stream.getTracks().forEach(t=>t.stop());m.close();};
-  closeBtn.onclick=stop;
-  m.overlay.querySelector('.modal-close')?.addEventListener('click',()=>{if(stream)stream.getTracks().forEach(t=>t.stop());stopped=true;cancelAnimationFrame(raf);});
-  m.overlay.addEventListener('click',e=>{if(e.target===m.overlay){if(stream)stream.getTracks().forEach(t=>t.stop());stopped=true;cancelAnimationFrame(raf);}});
-  try{
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
-    video.srcObject=stream;
-    await video.play();
-  }catch(e){stop();toast('Camera permission is required to scan barcodes','error');return null;}
-  const loop=async()=>{
-    if(stopped)return;
-    try{
-      const results=await detector.detect(video);
-      const hit=results.find(x=>normalizeBarcode(x.rawValue));
-      if(hit){
-        const code=normalizeBarcode(hit.rawValue),now=Date.now();
-        if(code&&(code!==lastCode||now-lastAt>1200)){
-          lastCode=code;lastAt=now;status.textContent=`Scanned: ${code}`;navigator.vibrate?.(70);
-          const keep=await onScan?.(code,'camera');
-          if(!continuous||keep===false){stop();return;}
-        }
-      }
-    }catch{}
-    raf=requestAnimationFrame(loop);
+    await loadHtml5Qrcode();
+  }catch(e){
+    toast('Phone scanner could not load. Refresh the page and try again.','error');
+    return null;
+  }
+
+  const id=`barcode-reader-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const reader=el('div',{
+    id,
+    style:'width:100%;min-height:260px;background:#05070b;border-radius:14px;overflow:hidden'
+  });
+  const status=el('div',{
+    text:'Opening back camera…',
+    style:'margin-top:10px;color:var(--muted);font-weight:700;line-height:1.45'
+  });
+  const retryBtn=el('button.btn.btn-blue',{type:'button',text:'↻ Retry Camera'});
+  const photoBtn=el('button.btn.btn-ghost',{type:'button',text:'📷 Take Photo'});
+  const closeBtn=el('button.btn.btn-ghost',{type:'button',text:'Close'});
+  const fileInput=el('input',{type:'file',accept:'image/*',capture:'environment',style:'display:none'});
+  const body=el('div',{},[reader,status,fileInput]);
+  const m=modal({title,wide:true,body,footer:[photoBtn,retryBtn,closeBtn]});
+
+  const formats=window.Html5QrcodeSupportedFormats?[
+    window.Html5QrcodeSupportedFormats.EAN_13,
+    window.Html5QrcodeSupportedFormats.EAN_8,
+    window.Html5QrcodeSupportedFormats.UPC_A,
+    window.Html5QrcodeSupportedFormats.UPC_E,
+    window.Html5QrcodeSupportedFormats.CODE_128,
+    window.Html5QrcodeSupportedFormats.CODE_39,
+    window.Html5QrcodeSupportedFormats.QR_CODE
+  ].filter(v=>v!==undefined):undefined;
+
+  const scanner=new window.Html5Qrcode(
+    id,
+    formats?{formatsToSupport:formats,verbose:false}:{verbose:false}
+  );
+
+  let stopped=false;
+  let running=false;
+  let lastCode='';
+  let lastAt=0;
+
+  const deliver=async decoded=>{
+    const code=normalizeBarcode(decoded);
+    const now=Date.now();
+    if(!code||(code===lastCode&&now-lastAt<1200))return true;
+    lastCode=code;lastAt=now;
+    status.textContent=`Scanned: ${code}`;
+    navigator.vibrate?.(70);
+    const keep=await onScan?.(code,'camera');
+    if(!continuous||keep===false){
+      await halt(true);
+      return false;
+    }
+    return true;
   };
-  raf=requestAnimationFrame(loop);
-  return{close:stop};
+
+  const halt=async(remove=true)=>{
+    if(stopped)return;
+    stopped=true;
+    if(running){
+      try{await scanner.stop();}catch{}
+      running=false;
+    }
+    try{await scanner.clear();}catch{}
+    if(remove)m.close();
+  };
+
+  const startCamera=async()=>{
+    if(stopped)return;
+    retryBtn.disabled=true;
+    status.textContent='Requesting camera permission…';
+    try{
+      if(!window.isSecureContext)throw new Error('HTTPS secure context required');
+      if(!navigator.mediaDevices?.getUserMedia)throw new Error('Camera API is unavailable in this browser');
+
+      let cameras=[];
+      try{cameras=await window.Html5Qrcode.getCameras();}catch(e){throw e;}
+      const preferred=preferredCamera(cameras);
+      if(!preferred)throw new Error('No camera found');
+
+      if(running){
+        try{await scanner.stop();}catch{}
+        running=false;
+      }
+
+      status.textContent='Point the back camera at the barcode';
+      await scanner.start(
+        preferred.id,
+        {fps:12,qrbox:{width:250,height:130},disableFlip:true},
+        decoded=>void deliver(decoded),
+        ()=>{}
+      );
+      running=true;
+      retryBtn.textContent='↻ Restart Camera';
+    }catch(e){
+      status.textContent=cameraErrorMessage(e);
+      toast(status.textContent,'error');
+    }finally{
+      retryBtn.disabled=false;
+    }
+  };
+
+  retryBtn.onclick=()=>void startCamera();
+  photoBtn.onclick=()=>fileInput.click();
+  fileInput.onchange=async()=>{
+    const file=fileInput.files?.[0];
+    if(!file)return;
+    try{
+      if(running){
+        try{await scanner.stop();}catch{}
+        running=false;
+      }
+      status.textContent='Reading barcode from photo…';
+      const decoded=await scanner.scanFile(file,true);
+      await deliver(decoded);
+      if(continuous&&!stopped){
+        fileInput.value='';
+        await startCamera();
+      }
+    }catch(e){
+      status.textContent='Barcode not detected in the photo. Try again with the barcode filling most of the frame.';
+      toast(status.textContent,'error');
+      fileInput.value='';
+    }
+  };
+
+  closeBtn.onclick=()=>void halt(true);
+  m.overlay.querySelector('.modal-close')?.addEventListener('click',()=>void halt(false));
+  m.overlay.addEventListener('click',e=>{if(e.target===m.overlay)void halt(false);});
+
+  await startCamera();
+  return{close:()=>halt(true)};
 }
