@@ -9,6 +9,7 @@ for(const [url,file] of [['auth','auth'],['dashboard','dashboard'],['categories'
   ['invoices','invoices'],['debtors','debtors'],['shifts','shifts'],['open-orders','open_orders'],['expenses','expenses'],
   ['inventory','inventory'],['supplier-invoices','supplier_invoices'],['product-import','product_import'],['reports','reports'],['search','search'],['settings','settings'],['backup','backup']])
   app.use(`/api/${url}`,require(`./routes/${file}`));
+app.get('/vendor/html5-qrcode.min.js',(_req,res)=>res.sendFile(path.join(__dirname,'node_modules','html5-qrcode','html5-qrcode.min.js')));
 app.use('/uploads',express.static(UPLOAD_DIR,{etag:true,maxAge:'1h'}));app.use(express.static(path.join(__dirname,'public')));
 app.get('*',(_req,res)=>res.sendFile(path.join(__dirname,'public','index.html')));
 app.listen(PORT,HOST,()=>console.log(`BOUDI CAFE POS running on ${HOST}:${PORT}`));
