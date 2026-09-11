@@ -19,16 +19,27 @@ with the correct files already excluded.
 
 ## Option A — hPanel "Setup Node.js App" (easiest)
 1. hPanel -> **Advanced** -> **Node.js** (or "Setup Node.js App").
-2. Create app:
-   - **Node version:** 18 (or newer)
-   - **Application root:** e.g. `boudi-cafe`
-   - **Application startup file:** `server.js`
-3. Upload the zip into the application root and extract it (File Manager).
-4. In the panel, add **Environment variables**:
+2. Connect GitHub and select:
+   - **Repository:** `beirutbitesofficial-crypto/BOUDI`
+   - **Branch:** `main`
+   - **Framework:** Express.js (or Other if Express is not detected)
+   - **Node.js version:** 18.x
+   - **Package manager:** npm
+   - **Build command:** leave empty / none
+   - **Start command:** `npm start`
+   - **Entry file (if Hostinger asks for one instead of Start command):** `scripts/start-hostinger.js`
+
+   **Important:** Do NOT use `server.js` as the production entry file on Hostinger. The start script prepares persistent SQLite/uploads storage before loading `server.js`.
+3. Add **Environment variables**:
+   - `HOST` = `0.0.0.0`
+   - `NODE_ENV` = `production`
    - `SESSION_SECRET` = a long random string
-   - `COOKIE_SECURE` = `true`  (only if the site uses HTTPS)
-5. Click **Run NPM Install**, then **Start / Restart** the app.
-6. Open your domain. Log in with `admin` / `admin123` and change the password.
+   - `COOKIE_SECURE` = `true`
+   - Leave `PORT` unset unless Hostinger explicitly requires it.
+   - Leave `DATA_DIR` unset; persistent storage is configured automatically.
+4. Deploy the application. Hostinger installs npm dependencies automatically.
+5. Open the temporary domain and confirm the login screen loads.
+6. Log in with `admin` / `admin123`, immediately change the password, then connect the final domain.
 
 ---
 
