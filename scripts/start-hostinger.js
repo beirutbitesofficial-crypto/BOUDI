@@ -40,13 +40,13 @@ function addCandidate(list, dir, targetDir) {
   if (hasDatabase(resolved) && !list.includes(resolved)) list.push(resolved);
 }
 
-function findLegacyData(domainRoot, targetDir, extraCandidate) {
+function findLegacyData(domainRoot, targetDir, extraCandidate, appRoot = APP_ROOT) {
   const candidates = [];
 
   addCandidate(candidates, extraCandidate, targetDir);
 
   // Data restored directly into the currently deployed application.
-  addCandidate(candidates, path.join(APP_ROOT, 'data'), targetDir);
+  addCandidate(candidates, path.join(appRoot, 'data'), targetDir);
 
   // Older Hostinger deployment versions. Hostinger keeps each Node build under
   // hbuilds/versions/<version>/nodejs, so restored backups can be recovered here.
@@ -62,56 +62,65 @@ function findLegacyData(domainRoot, targetDir, extraCandidate) {
     }
   }
 
-  // Prefer the most substantial database first, then the newest one. This helps
-  // avoid choosing an accidentally-created empty DB over a restored real backup.
-  candidates.sort((a, b) => {
-    const aStat = dbStat(a);
-    const bStat = dbStat(b);
-    const sizeDiff = (bStat?.size || 0) - (aStat?.size || 0);
-    if (sizeDiff !== 0) return sizeDiff;
-    return (bStat?.mtimeMs || 0) - (aStat?.mtimeMs || 0);
-  });
+  // Never guess which of several sales databases contains the correct records.
+  if (candidates.length > 1) {
+    throw new Error('[storage] Multiple legacy databases found. Back them up and set DATA_MIGRATION_SOURCE to the verified data directory: ' + candidates.join(', '));
+  }
 
   return candidates[0] || null;
 }
 
 function copyData(sourceDir, targetDir) {
-  fs.mkdirSync(path.dirname(targetDir), { recursive: true });
-  if (fs.existsSync(targetDir) && !hasDatabase(targetDir)) {
-    fs.rmSync(targetDir, { recursive: true, force: true });
-  }
+  // Read SQLite through its engine so committed WAL transactions are included.
+  // Copy into staging first; never delete or overwrite existing data/uploads.
+  const Database = require('better-sqlite3');
   fs.mkdirSync(targetDir, { recursive: true });
-  fs.cpSync(sourceDir, targetDir, {
-    recursive: true,
-    force: true,
-    preserveTimestamps: true,
-  });
+  const staging = fs.mkdtempSync(path.join(targetDir, '.migration-'));
+  const source = new Database(path.join(sourceDir, DB_NAME), { readonly: true, fileMustExist: true });
+  try {
+    const snapshot = path.join(staging, DB_NAME).replace(/'/g, "''");
+    source.exec(`VACUUM INTO '${snapshot}'`);
+  } finally { source.close(); }
+  for (const name of ['uploads', 'supplier-invoices']) {
+    const from = path.join(sourceDir, name);
+    if (fs.existsSync(from)) fs.cpSync(from, path.join(targetDir, name), {
+      recursive: true, force: false, errorOnExist: false, preserveTimestamps: true
+    });
+  }
+  fs.copyFileSync(path.join(staging, DB_NAME), path.join(targetDir, DB_NAME), fs.constants.COPYFILE_EXCL);
 }
 
-function prepareDataDirectory() {
-  const domainRoot = findDomainRoot(APP_ROOT);
+function prepareDataDirectory(appRoot = APP_ROOT) {
+  const domainRoot = findDomainRoot(appRoot);
+  if (process.env.DATA_DIR && !path.isAbsolute(process.env.DATA_DIR)) throw new Error('[storage] DATA_DIR must be an absolute persistent path.');
   const configuredDataDir = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : null;
 
   // Outside Hostinger, preserve the original local-development behavior.
   if (!domainRoot) {
-    process.env.DATA_DIR = configuredDataDir || path.join(APP_ROOT, 'data');
+    if(process.env.NODE_ENV==='production' && !configuredDataDir) throw new Error('[storage] Cannot detect persistent hosting storage. Set DATA_DIR to an absolute persistent directory outside the deployment before starting.');
+    if(process.env.NODE_ENV==='production' && configuredDataDir && (configuredDataDir===appRoot || configuredDataDir.startsWith(appRoot+path.sep))) throw new Error('[storage] Production DATA_DIR must be outside the application deployment directory.');
+    process.env.DATA_DIR = configuredDataDir || path.join(appRoot, 'data');
+    fs.mkdirSync(process.env.DATA_DIR,{recursive:true});
+    console.log('[storage] Data directory: '+process.env.DATA_DIR);
     return;
   }
 
   // A DATA_DIR outside Hostinger's versioned hbuilds tree is already persistent.
   // If an old configuration points inside hbuilds/versions, treat it as legacy
   // input and migrate it instead of keeping a deployment-specific path.
-  const versionsRoot = path.join(domainRoot, 'hbuilds', 'versions') + path.sep;
-  const configuredIsPersistent = configuredDataDir && !configuredDataDir.startsWith(versionsRoot);
+  const versionsRoot = path.join(domainRoot, 'hbuilds') + path.sep;
+  const configuredIsPersistent = configuredDataDir && configuredDataDir !== path.join(domainRoot,'hbuilds') && !configuredDataDir.startsWith(versionsRoot);
   const persistentDir = configuredIsPersistent
     ? configuredDataDir
     : path.join(domainRoot, 'persistent-data');
 
   if (!hasDatabase(persistentDir)) {
-    const legacy = findLegacyData(
+    const explicitSource = process.env.DATA_MIGRATION_SOURCE;
+    if(explicitSource && (!path.isAbsolute(explicitSource)||!hasDatabase(explicitSource))) throw new Error('[storage] DATA_MIGRATION_SOURCE must contain the existing boudicafe.db.');
+    const legacy = explicitSource || findLegacyData(
       domainRoot,
       persistentDir,
-      configuredIsPersistent ? null : configuredDataDir
+      configuredIsPersistent ? null : configuredDataDir, appRoot
     );
     if (legacy) {
       console.log(`[storage] Migrating existing BOUDI CAFE data to persistent storage from ${legacy}`);
@@ -126,5 +135,5 @@ function prepareDataDirectory() {
   console.log(`[storage] Persistent data directory: ${persistentDir}`);
 }
 
-prepareDataDirectory();
-require('../server.js');
+module.exports = { prepareDataDirectory, findDomainRoot };
+if (require.main === module) require('../server.js');

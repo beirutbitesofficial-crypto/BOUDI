@@ -51,23 +51,52 @@ export async function renderProducts(root){
     const focusDetails=()=>{name.focus();name.select?.();};
     barcode.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();barcode.value=normalizeBarcode(barcode.value);focusDetails();}});
     scanBtn.onclick=()=>openBarcodeCamera({title:p.id?'Scan / Change Product Barcode':'Scan New Product Barcode',onScan:code=>{barcode.value=code;focusDetails();return false;}});
+    const saveButton=el('button.btn.btn-primary',{text:'Save Product'});
     const save=async()=>{
+      if(saveButton.disabled)return;
+      saveButton.disabled=true;saveButton.textContent='Saving…';
       try{
         if(image.files[0]){const fd=new FormData();fd.append('image',image.files[0]);imagePath=(await api.upload('/products/upload',fd)).path;}
-        const data={name:name.value,name_ar:ar.value,category_id:category.value||null,type:'product',barcode:normalizeBarcode(barcode.value),selling_price:sell.value,stock:stock.value,min_stock:min.value,track_stock:track.checked,active:active.checked,image:imagePath};
+        const data={name:name.value,name_ar:ar.value,category_id:category.value||null,type:'product',barcode:normalizeBarcode(barcode.value),selling_price:sell.value,stock:stock.value,min_stock:min.value,track_stock:track.checked,active:active.checked,...(!p.id||image.files[0]?{image:imagePath}:{})};
         if(management)data.purchase_price=cost.value;
         if(p.id)await api.put('/products/'+p.id,data);else await api.post('/products',data);
         m.close();products=await api.get('/products');draw();toast('Product saved');
       }catch(e){toast(e.message,'error');}
+      finally{saveButton.disabled=false;saveButton.textContent='Save Product';}
     };
     const barcodeBlock=el('div',{style:'grid-column:1/-1'},[
       el('label',{text:'Barcode',style:'display:block;margin-bottom:7px;font-weight:800'}),
       el('div.flex',{},[barcode,scanBtn]),
       el('small',{text:'Scan the product first with the USB barcode scanner or phone camera, then enter its name and price.',style:'display:block;margin-top:6px;color:var(--muted)'})
     ]);
-    const fields=[barcodeBlock,name,ar,category,sell];if(management)fields.push(cost);
-    fields.push(stock,min,el('label',{},[track,' Track stock']),el('label',{},[active,' Active']),image);
-    const m=modal({title:p.id?'Edit Product':'Add Product',wide:true,body:el('div.form-grid',{},fields),footer:el('button.btn.btn-primary',{text:'Save',onclick:save})});
+    const field=(title,input,hint)=>el('label.product-field',{},[
+      el('span',{text:title}),input,el('small',{text:hint})
+    ]);
+    const preview=el('img',{alt:'Product image',style:'max-width:100%;height:150px;object-fit:contain;border-radius:10px;display:none'});
+    const imageStatus=el('small',{text:imagePath?'Current saved image. Choose a file only to replace it.':'Choose a JPG, PNG or WebP image, then press Save Product.'});
+    if(imagePath){preview.src=imagePath;preview.style.display='block';}
+    preview.onerror=()=>{preview.style.display='none';imageStatus.textContent='Image could not load. Choose a new image or check your connection.';};
+    image.onchange=()=>{
+      const file=image.files[0];if(!file)return;
+      if(file.size>8*1024*1024){image.value='';toast('Image must be smaller than 8 MB','error');return;}
+      const reader=new FileReader();
+      reader.onload=()=>{preview.src=reader.result;preview.style.display='block';imageStatus.textContent='New image selected — press Save Product to save it.';};
+      reader.readAsDataURL(file);
+    };
+    const fields=[barcodeBlock,
+      field('Product Name',name,'Example: Laziza'),
+      field('Arabic Name',ar,'Optional Arabic product name.'),
+      field('Category',category,'Choose the group shown in the POS.')];
+    if(management)fields.push(field('Purchase Price (LBP)',cost,'What you pay for ONE item — سعر شراء القطعة.'));
+    fields.push(field('Selling Price (LBP)',sell,'What the customer pays for ONE item — سعر بيع القطعة.'),
+      field('Stock',stock,'Current quantity available — الكمية الموجودة.'),
+      field('Stock Alert',min,'Alert when stock reaches this quantity or less — حد التنبيه.'),
+      field('Track Stock',track,'Automatically deduct quantity when sold.'),
+      field('Active',active,'Show this product for sale.'),
+      el('div.product-field',{style:'grid-column:1/-1'},[field('Product Image',image,'JPG, PNG or WebP — maximum 8 MB.'),preview,imageStatus]));
+    saveButton.onclick=save;
+    const m=modal({title:p.id?'Edit Product':'Add Product',wide:true,body:el('div.form-grid',{},fields),footer:saveButton});
+    m.overlay.classList.add('product-editor');
     setTimeout(()=>{if(scanFirst||!p.id){barcode.focus();barcode.select?.();}},50);
   }
 

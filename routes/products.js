@@ -111,10 +111,7 @@ router.put('/:id', managerOnly, (req, res) => {
       number(b.min_stock||0,'minimum stock'),track,image,b.active===false?0:1,old.id);
     if (track && stock!==old.stock) db.prepare(`INSERT INTO stock_history(product_id,change,reason,balance,ref)
       VALUES(?,?,?,?,?)`).run(old.id,stock-old.stock,'manual_adjustment',stock,'product edit');
-    if (old.image && image && old.image.split('?')[0] !== image.split('?')[0]) {
-      const oldFile=path.join(UPLOAD_DIR,path.basename(old.image.split('?')[0]));
-      if (fs.existsSync(oldFile)) fs.rmSync(oldFile);
-    }
+    // Keep previous image files for backups and other records that may reference them.
     res.json({ ok:true, barcode, image: image ? `${image.split('?')[0]}?v=${Date.now()}` : null });
   } catch(e) { res.status(400).json({ error:e.message }); }
 });

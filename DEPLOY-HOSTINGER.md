@@ -98,3 +98,21 @@ After enabling HTTPS, set `COOKIE_SECURE=true` in `.env` and `pm2 restart boudi-
 1. Change the default admin password (`admin` / `admin123`) in Settings.
 2. Make sure `SESSION_SECRET` is set to a long random value.
 3. Back up the database file `data/boudicafe.db` regularly (Settings has a backup route).
+
+
+## Storage protection update
+
+Both `npm start` and `node server.js` now prepare storage before opening SQLite.
+On recognized `hbuilds` hosting layouts the database, product images and supplier
+files use the same domain-level `persistent-data` directory. Verify the
+`[storage] Persistent data directory:` line in runtime logs. For other production
+layouts set an absolute `DATA_DIR` on storage that the hosting provider retains
+across deployments; startup refuses an unspecified or app-local directory.
+
+Before the first updated deployment, download a backup including images from the
+running application's Settings/Backup. Do not delete older builds until records
+and images have been verified. If multiple legacy databases are detected, startup
+stops instead of guessing. Set `DATA_MIGRATION_SOURCE` to the verified existing
+absolute data directory and restart; SQLite migration includes committed WAL data.
+Existing persistent databases are never replaced by migration. Previously deleted
+files cannot be recovered by a code update; restore an existing backup if needed.
