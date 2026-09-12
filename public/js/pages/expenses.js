@@ -1,6 +1,6 @@
-import { api } from '../api.js';
-import { t } from '../i18n.js';
-import { el, statCard, money, fmtDay, badge, toast, modal, confirmDialog } from '../ui.js';
+import { api } from '../api.js?v=20260912-i18n';
+import { t } from '../i18n.js?v=20260912-i18n';
+import { el, statCard, money, fmtDay, badge, toast, modal, confirmDialog } from '../ui.js?v=20260912-i18n';
 
 const CATS = ['electricity', 'internet', 'rent', 'maintenance', 'other'];
 

@@ -1,6 +1,6 @@
-import { api } from '../api.js';
-import { t } from '../i18n.js';
-import { el, statCard, money, fmtDate, toast, badge } from '../ui.js';
+import { api } from '../api.js?v=20260912-i18n';
+import { t } from '../i18n.js?v=20260912-i18n';
+import { el, statCard, money, fmtDate, toast, badge } from '../ui.js?v=20260912-i18n';
 
 export async function renderShifts(root) {
   let current = await api.get('/shifts/current');

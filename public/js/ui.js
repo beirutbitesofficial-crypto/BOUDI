@@ -1,5 +1,5 @@
 // UI helpers: DOM builder, formatting, toast, modal
-import { getLang, t } from './i18n.js';
+import { getLang, t } from './i18n.js?v=20260912-i18n';
 
 let currency = 'LBP';
 let usdRate = 89500;
@@ -60,7 +60,7 @@ export function toast(msg, type = 'success') {
   const wrap = document.getElementById('toast-wrap');
   const el = document.createElement('div');
   el.className = 'toast ' + type;
-  el.textContent = msg;
+  el.textContent = t(msg);
   wrap.appendChild(el);
   setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 250); }, 2800);
 }

@@ -1,7 +1,7 @@
-import { api } from '../api.js';
-import { t } from '../i18n.js';
-import { el, statCard, money, num, fmtDate, badge, toast, modal, confirmDialog } from '../ui.js';
-import { state } from '../app.js';
+import { api } from '../api.js?v=20260912-i18n';
+import { t } from '../i18n.js?v=20260912-i18n';
+import { el, statCard, money, num, fmtDate, badge, toast, modal, confirmDialog } from '../ui.js?v=20260912-i18n';
+import { state } from '../app.js?v=20260912-i18n';
 
 export async function renderDebtors(root) {
   let debtors = await api.get('/debtors');
@@ -46,7 +46,7 @@ export async function renderDebtors(root) {
         el('td', {}, [el('div.list-actions', {}, [
           d.status !== 'paid' ? el('button.btn.btn-sm.btn-green', { text: '💵 ' + t('pay'), onclick: () => payDebt(d) }) : null,
           d.phone ? el('button.btn.btn-sm.whatsapp-btn', { text: 'WhatsApp', onclick: () => sendWhatsApp(d) }) : null,
-          el('button.btn.btn-sm', { text: 'Edit', onclick: () => editDebtor(d) }),
+          el('button.btn.btn-sm', { text: t('Edit'), onclick: () => editDebtor(d) }),
           el('button.btn.btn-sm.btn-blue', { text: t('view'), onclick: () => viewDebt(d) }),
           state.user.role !== 'cashier' ? el('button.btn.btn-sm.btn-danger', { text: t('delete'), onclick: () => del(d) }) : null
         ])])
@@ -63,7 +63,7 @@ export async function renderDebtors(root) {
 
   function sendWhatsApp(d) {
     const phone = String(d.phone || '').replace(/\D/g, '');
-    if (!phone) return toast('Add a phone number first', 'error');
+    if (!phone) return toast(t('Add a phone number first'), 'error');
     const remaining = money(d.amount - d.paid_amount);
     const message = `مرحباً ${d.customer_name}، تذكير ودي من BOUDI CAFE. المبلغ المتبقي عليكم هو ${remaining}. شكراً لكم.`;
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank', 'noopener');
@@ -76,9 +76,9 @@ export async function renderDebtors(root) {
     const cancel = el('button.btn.btn-ghost', { text: t('cancel') });
     const body = el('div', {}, [
       el('div.form-row', {}, [el('label', { text: t('customer_name') }), name]),
-      el('div.form-row', {}, [el('label', { text: 'Phone number' }), phone])
+      el('div.form-row', {}, [el('label', { text: t('Phone number') }), phone])
     ]);
-    const m = modal({ title: 'Edit debtor', body, footer: [cancel, save] });
+    const m = modal({ title: t('Edit debtor'), body, footer: [cancel, save] });
     cancel.addEventListener('click', m.close);
     save.addEventListener('click', async () => {
       if (!name.value.trim()) return toast(t('required_field'), 'error');
@@ -115,7 +115,7 @@ export async function renderDebtors(root) {
     const body = el('div', {}, [
       el('div.card', { style: 'background:var(--bg-2);margin-bottom:14px' }, [
         line(t('customer_name'), full.customer_name),
-        line('Phone number', full.phone || '-'),
+        line(t('Phone number'), full.phone || '-'),
         line(t('debt_amount'), money(full.amount)),
         line(t('paid_amount'), money(full.paid_amount)),
         line(t('remaining'), money(full.amount - full.paid_amount)),
@@ -142,7 +142,7 @@ export async function renderDebtors(root) {
     const cancel = el('button.btn.btn-ghost', { text: t('cancel') });
     const body = el('div', {}, [
       el('div.form-row', {}, [el('label', { text: t('customer_name') }), name]),
-      el('div.form-row', {}, [el('label', { text: 'Phone number' }), phone]),
+      el('div.form-row', {}, [el('label', { text: t('Phone number') }), phone]),
       el('div.form-row', {}, [el('label', { text: t('debt_amount') }), amount]),
       el('div.form-row', {}, [el('label', { text: t('notes') }), notes])
     ]);
@@ -159,7 +159,7 @@ export async function renderDebtors(root) {
     el('div.toolbar', {}, [el('div.search-box', {}, [searchInput]), tabs, el('div.spacer', {}),
       el('button.btn.btn-primary', { text: '➕ ' + t('add_debtor'), onclick: addDebtor })]),
     el('div.table-wrap', {}, [el('table', {}, [
-      el('thead', {}, [el('tr', {}, [el('th', { text: t('customer_name') }), el('th', { text: 'Phone number' }), el('th', { text: t('debt_amount') }),
+      el('thead', {}, [el('tr', {}, [el('th', { text: t('customer_name') }), el('th', { text: t('Phone number') }), el('th', { text: t('debt_amount') }),
         el('th', { text: t('paid_amount') }), el('th', { text: t('remaining') }), el('th', { text: t('status') }), el('th', { text: t('actions') })])]),
       tbody
     ])])

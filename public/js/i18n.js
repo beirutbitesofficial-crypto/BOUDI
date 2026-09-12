@@ -1,3 +1,4 @@
+import {arabicPhrases} from './phrases.js?v=20260912-i18n';
 // Internationalization: English + Arabic (RTL)
 export const translations = {
   en: {
@@ -158,27 +159,37 @@ export const translations = {
   }
 };
 
-let currentLang = localStorage.getItem('bc_lang') || 'en';
+// Start each page load in Arabic; the language button switches the active session.
+let currentLang = 'ar';
 
 export function getLang() { return currentLang; }
 
-export function t(key) {
-  return (translations[currentLang] && translations[currentLang][key]) || translations.en[key] || key;
+export function t(key, values = {}) {
+  let result = currentLang === 'ar'
+    ? (translations.ar[key] || arabicPhrases[key] || translations.en[key] || key)
+    : (translations.en[key] || key);
+  return String(result).replace(/\{(\w+)\}/g, (match, name) => values[name] === undefined ? match : String(values[name]));
 }
 
 export function setLang(lang) {
-  currentLang = translations[lang] ? lang : 'en';
-  localStorage.setItem('bc_lang', currentLang);
-  document.documentElement.lang = currentLang;
-  document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+  currentLang = lang === 'en' ? 'en' : 'ar';
+  const app = document.getElementById('app');
+  const login = document.getElementById('login-screen');
+  const loggedIn = login?.classList.contains('hidden');
+  document.documentElement.lang = loggedIn ? currentLang : 'en';
+  document.documentElement.dir = loggedIn && currentLang === 'ar' ? 'rtl' : 'ltr';
+  if(app){app.lang=currentLang;app.dir=currentLang==='ar'?'rtl':'ltr';}
+  if(login){login.lang='en';login.dir='ltr';}
+  const button=document.getElementById('quick-lang');
+  if(button){button.textContent=currentLang==='ar'?'English':'العربية';button.title=currentLang==='ar'?'Switch to English':'التبديل إلى العربية';}
   applyStaticTranslations();
 }
 
 export function applyStaticTranslations() {
   document.querySelectorAll('[data-i18n]').forEach(el => {
-    el.textContent = t(el.getAttribute('data-i18n'));
+    if(!el.closest('#login-screen')) el.textContent = t(el.getAttribute('data-i18n'));
   });
   document.querySelectorAll('[data-i18n-ph]').forEach(el => {
-    el.placeholder = t(el.getAttribute('data-i18n-ph'));
+    if(!el.closest('#login-screen')) el.placeholder = t(el.getAttribute('data-i18n-ph'));
   });
 }

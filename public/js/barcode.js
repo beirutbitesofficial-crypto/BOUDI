@@ -1,4 +1,5 @@
-import {el,modal,toast} from './ui.js';
+import {t} from './i18n.js?v=20260912-i18n';
+import {el,modal,toast} from './ui.js?v=20260912-i18n';
 
 export function normalizeBarcode(value){
   return String(value||'').trim().replace(/\s+/g,'');
@@ -36,8 +37,8 @@ function loadScript(src){
     const script=document.createElement('script');
     script.src=src;
     script.async=true;
-    script.onload=()=>window.Html5Qrcode?resolve():reject(new Error('Scanner library did not initialize'));
-    script.onerror=()=>reject(new Error('Scanner library could not be loaded'));
+    script.onload=()=>window.Html5Qrcode?resolve():reject(new Error(t('Scanner library did not initialize')));
+    script.onerror=()=>reject(new Error(t('Scanner library could not be loaded')));
     document.head.appendChild(script);
   });
 }
@@ -59,11 +60,11 @@ async function loadHtml5Qrcode(){
 function cameraErrorMessage(error){
   const name=String(error?.name||'');
   const message=String(error?.message||error||'');
-  if(!window.isSecureContext)return 'Phone camera requires HTTPS. Open BOUDI CAFE using the https:// address.';
-  if(name==='NotAllowedError'||/permission|denied/i.test(message))return 'Camera permission is blocked. Allow Camera for this website in your browser settings, then tap Retry Camera.';
-  if(name==='NotFoundError'||/not found|no camera/i.test(message))return 'No camera was found on this device.';
-  if(name==='NotReadableError'||/could not start|in use|track start/i.test(message))return 'The camera is busy in another app. Close the other camera app and try again.';
-  return 'Could not start the camera. Tap Retry Camera or use Take Photo.';
+  if(!window.isSecureContext)return t('Phone camera requires HTTPS. Open BOUDI CAFE using the https:// address.');
+  if(name==='NotAllowedError'||/permission|denied/i.test(message))return t('Camera permission is blocked. Allow Camera for this website in your browser settings, then tap Retry Camera.');
+  if(name==='NotFoundError'||/not found|no camera/i.test(message))return t('No camera was found on this device.');
+  if(name==='NotReadableError'||/could not start|in use|track start/i.test(message))return t('The camera is busy in another app. Close the other camera app and try again.');
+  return t('Could not start the camera. Tap Retry Camera or use Take Photo.');
 }
 
 function preferredCamera(cameras){
@@ -72,11 +73,11 @@ function preferredCamera(cameras){
   return rear||cameras[cameras.length-1];
 }
 
-export async function openBarcodeCamera({title='Scan Barcode',onScan,continuous=false}={}){
+export async function openBarcodeCamera({title=t('Scan Barcode'),onScan,continuous=false}={}){
   try{
     await loadHtml5Qrcode();
   }catch(e){
-    toast('Phone scanner could not load. Refresh the page and try again.','error');
+    toast(t('Phone scanner could not load. Refresh the page and try again.'),'error');
     return null;
   }
 
@@ -86,12 +87,12 @@ export async function openBarcodeCamera({title='Scan Barcode',onScan,continuous=
     style:'width:100%;min-height:260px;background:#05070b;border-radius:14px;overflow:hidden'
   });
   const status=el('div',{
-    text:'Opening back camera…',
+    text:t('Opening back camera…'),
     style:'margin-top:10px;color:var(--muted);font-weight:700;line-height:1.45'
   });
-  const retryBtn=el('button.btn.btn-blue',{type:'button',text:'↻ Retry Camera'});
-  const photoBtn=el('button.btn.btn-ghost',{type:'button',text:'📷 Take Photo'});
-  const closeBtn=el('button.btn.btn-ghost',{type:'button',text:'Close'});
+  const retryBtn=el('button.btn.btn-blue',{type:'button',text:t('↻ Retry Camera')});
+  const photoBtn=el('button.btn.btn-ghost',{type:'button',text:t('📷 Take Photo')});
+  const closeBtn=el('button.btn.btn-ghost',{type:'button',text:t('Close')});
   const fileInput=el('input',{type:'file',accept:'image/*',capture:'environment',style:'display:none'});
   const body=el('div',{},[reader,status,fileInput]);
   const m=modal({title,wide:true,body,footer:[photoBtn,retryBtn,closeBtn]});
@@ -126,7 +127,7 @@ export async function openBarcodeCamera({title='Scan Barcode',onScan,continuous=
     if(!code||(code===lastCode&&now-lastAt<1200))return true;
     delivering=true;
     lastCode=code;lastAt=now;
-    status.textContent=`Scanned: ${code}`;
+    status.textContent=t('Scanned: {code}',{code});
     navigator.vibrate?.(70);
     try{
       const keep=await onScan?.(code,'camera');
@@ -154,22 +155,22 @@ export async function openBarcodeCamera({title='Scan Barcode',onScan,continuous=
   const startCamera=async()=>{
     if(stopped)return;
     retryBtn.disabled=true;
-    status.textContent='Requesting camera permission…';
+    status.textContent=t('Requesting camera permission…');
     try{
       if(!window.isSecureContext)throw new Error('HTTPS secure context required');
-      if(!navigator.mediaDevices?.getUserMedia)throw new Error('Camera API is unavailable in this browser');
+      if(!navigator.mediaDevices?.getUserMedia)throw new Error(t('Camera API is unavailable in this browser'));
 
       let cameras=[];
       try{cameras=await window.Html5Qrcode.getCameras();}catch(e){throw e;}
       const preferred=preferredCamera(cameras);
-      if(!preferred)throw new Error('No camera found');
+      if(!preferred)throw new Error(t('No camera found'));
 
       if(running){
         try{await scanner.stop();}catch{}
         running=false;
       }
 
-      status.textContent='Point the back camera at the barcode';
+      status.textContent=t('Point the back camera at the barcode');
       await scanner.start(
         preferred.id,
         {fps:12,qrbox:{width:250,height:130},disableFlip:true},
@@ -177,7 +178,7 @@ export async function openBarcodeCamera({title='Scan Barcode',onScan,continuous=
         ()=>{}
       );
       running=true;
-      retryBtn.textContent='↻ Restart Camera';
+      retryBtn.textContent=t('↻ Restart Camera');
     }catch(e){
       status.textContent=cameraErrorMessage(e);
       toast(status.textContent,'error');
@@ -196,7 +197,7 @@ export async function openBarcodeCamera({title='Scan Barcode',onScan,continuous=
         try{await scanner.stop();}catch{}
         running=false;
       }
-      status.textContent='Reading barcode from photo…';
+      status.textContent=t('Reading barcode from photo…');
       const decoded=await scanner.scanFile(file,true);
       await deliver(decoded);
       if(continuous&&!stopped){
@@ -204,7 +205,7 @@ export async function openBarcodeCamera({title='Scan Barcode',onScan,continuous=
         await startCamera();
       }
     }catch(e){
-      status.textContent='Barcode not detected in the photo. Try again with the barcode filling most of the frame.';
+      status.textContent=t('Barcode not detected in the photo. Try again with the barcode filling most of the frame.');
       toast(status.textContent,'error');
       fileInput.value='';
     }

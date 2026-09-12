@@ -1,7 +1,7 @@
-import { api } from '../api.js';
-import { t, getLang } from '../i18n.js';
-import { el, statCard, money, num, fmtDate, badge, toast } from '../ui.js';
-import { state } from '../app.js';
+import { api } from '../api.js?v=20260912-i18n';
+import { t, getLang } from '../i18n.js?v=20260912-i18n';
+import { el, statCard, money, num, fmtDate, badge, toast } from '../ui.js?v=20260912-i18n';
+import { state } from '../app.js?v=20260912-i18n';
 
 export async function renderReports(root) {
   let period = 'daily';
@@ -146,16 +146,16 @@ function exportExcel(d) {
   if (!d) { toast(t('no_data'), 'warn'); return; }
   const wb = XLSX.utils.book_new();
   const summary = XLSX.utils.aoa_to_sheet([[t('report'), t('value')], ...reportRows(d)]);
-  XLSX.utils.book_append_sheet(wb, summary, 'Summary');
+  XLSX.utils.book_append_sheet(wb, summary, t('Summary'));
   if (d.best_selling && d.best_selling.length) {
     const best = XLSX.utils.aoa_to_sheet([[t('name'), t('type'), t('qty_sold'), t('revenue')],
       ...d.best_selling.map(b => [b.name, b.type, b.qty, b.revenue])]);
-    XLSX.utils.book_append_sheet(wb, best, 'Best Selling');
+    XLSX.utils.book_append_sheet(wb, best, t('Best Selling'));
   }
   if (d.invoices && d.invoices.length) {
     const inv = XLSX.utils.aoa_to_sheet([[t('invoice_no'), t('customer_name'), t('product_sales'), t('gaming_sales'), t('total'), t('status'), t('date')],
       ...d.invoices.map(i => [i.invoice_no, i.customer_name, i.product_total, i.gaming_total, i.total, i.payment_status, i.created_at])]);
-    XLSX.utils.book_append_sheet(wb, inv, 'Invoices');
+    XLSX.utils.book_append_sheet(wb, inv, t('Invoices'));
   }
   XLSX.writeFile(wb, `report-${d.label}.xlsx`);
 }
