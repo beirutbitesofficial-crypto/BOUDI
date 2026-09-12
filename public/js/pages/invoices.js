@@ -1,6 +1,6 @@
-import { api } from '../api.js?v=20260912-i18n';
-import { t, getLang } from '../i18n.js?v=20260912-i18n';
-import { el, money, num, fmtDate, badge, toast, modal, confirmDialog } from '../ui.js?v=20260912-i18n';
+import { api } from '../api.js?v=20260912-mobile';
+import { t, getLang } from '../i18n.js?v=20260912-mobile';
+import { el, money, num, fmtDate, badge, toast, modal, confirmDialog } from '../ui.js?v=20260912-mobile';
 
 export async function renderInvoices(root) {
   const invoices = await api.get('/invoices?limit=300');

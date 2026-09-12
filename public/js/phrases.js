@@ -210,3 +210,5 @@ Object.assign(arabicPhrases, {
   'Invalid selling price':'سعر البيع غير صالح','Invalid purchase price':'سعر الشراء غير صالح',
   'Invalid stock':'كمية المخزون غير صالحة','Invalid minimum stock':'حد تنبيه المخزون غير صالح'
 });
+
+Object.assign(arabicPhrases,{'Open menu':'فتح القائمة','Close menu':'إغلاق القائمة','product edit':'تعديل المنتج'});

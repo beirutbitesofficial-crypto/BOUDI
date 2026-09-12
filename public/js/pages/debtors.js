@@ -1,7 +1,7 @@
-import { api } from '../api.js?v=20260912-i18n';
-import { t } from '../i18n.js?v=20260912-i18n';
-import { el, statCard, money, num, fmtDate, badge, toast, modal, confirmDialog } from '../ui.js?v=20260912-i18n';
-import { state } from '../app.js?v=20260912-i18n';
+import { api } from '../api.js?v=20260912-mobile';
+import { t } from '../i18n.js?v=20260912-mobile';
+import { el, statCard, money, num, fmtDate, badge, toast, modal, confirmDialog } from '../ui.js?v=20260912-mobile';
+import { state } from '../app.js?v=20260912-mobile';
 
 export async function renderDebtors(root) {
   let debtors = await api.get('/debtors');

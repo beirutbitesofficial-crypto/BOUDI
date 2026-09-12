@@ -1,4 +1,4 @@
-import {api} from '../api.js?v=20260912-i18n';import {t,getLang} from '../i18n.js?v=20260912-i18n';import {el,money,num,toast,modal} from '../ui.js?v=20260912-i18n';import {attachHardwareBarcodeScanner,normalizeBarcode,openBarcodeCamera} from '../barcode.js?v=20260912-i18n';
+import {api} from '../api.js?v=20260912-mobile';import {t,getLang} from '../i18n.js?v=20260912-mobile';import {el,money,num,toast,modal} from '../ui.js?v=20260912-mobile';import {attachHardwareBarcodeScanner,normalizeBarcode,openBarcodeCamera} from '../barcode.js?v=20260912-mobile';
 export async function renderPOS(root,draft){
   const [products,categories,settings,initialSession]=await Promise.all([api.get('/products'),api.get('/categories'),api.get('/settings').catch(()=>({default_game_price:100000})),api.get('/gaming/session/current')]);
   let tab='product',cat='all',payment='paid',openId=null,cart=[],openOrders=await api.get('/open-orders'),gamingSession=initialSession;const gamePrice=Number(settings.default_game_price)||100000;

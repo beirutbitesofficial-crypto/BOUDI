@@ -1,5 +1,5 @@
 // UI helpers: DOM builder, formatting, toast, modal
-import { getLang, t } from './i18n.js?v=20260912-i18n';
+import { getLang, t } from './i18n.js?v=20260912-mobile';
 
 let currency = 'LBP';
 let usdRate = 89500;
@@ -12,12 +12,12 @@ export function money(n) {
   n = Number(n) || 0;
   if (currency === 'USD') n /= usdRate;
   const decimals = currency === 'USD' ? 2 : 0;
-  const s = n.toLocaleString(getLang() === 'ar' ? 'ar-EG' : 'en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-  return `${s} ${currency}`;
+  const s = n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  return `\u2066${s} ${currency==='LBP'&&getLang()==='ar'?'ل.ل.':currency}\u2069`;
 }
 
 export function num(n) {
-  return (Number(n) || 0).toLocaleString(getLang() === 'ar' ? 'ar-EG' : 'en-US', { maximumFractionDigits: 0 });
+  return (Number(n) || 0).toLocaleString('en-US', { maximumFractionDigits: 0 });
 }
 
 export function fmtDate(iso) {

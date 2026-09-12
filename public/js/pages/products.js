@@ -1,8 +1,8 @@
-import {t} from '../i18n.js?v=20260912-i18n';
-import {api} from '../api.js?v=20260912-i18n';
-import {el,money,toast,modal} from '../ui.js?v=20260912-i18n';
-import {state} from '../app.js?v=20260912-i18n';
-import {normalizeBarcode,openBarcodeCamera} from '../barcode.js?v=20260912-i18n';
+import {t} from '../i18n.js?v=20260912-mobile';
+import {api} from '../api.js?v=20260912-mobile';
+import {el,money,toast,modal} from '../ui.js?v=20260912-mobile';
+import {state} from '../app.js?v=20260912-mobile';
+import {normalizeBarcode,openBarcodeCamera} from '../barcode.js?v=20260912-mobile';
 
 export async function renderProducts(root){
   let [products,categories]=await Promise.all([api.get('/products'),api.get('/categories?kind=product')]);

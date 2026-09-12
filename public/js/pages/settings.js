@@ -1,5 +1,5 @@
-import {t} from '../i18n.js?v=20260912-i18n';
-import{api}from'../api.js?v=20260912-i18n';import{el,toast,setCurrency,setExchangeRate,fmtDate}from'../ui.js?v=20260912-i18n';import{state}from'../app.js?v=20260912-i18n';
+import {t} from '../i18n.js?v=20260912-mobile';
+import{api}from'../api.js?v=20260912-mobile';import{el,toast,setCurrency,setExchangeRate,fmtDate}from'../ui.js?v=20260912-mobile';import{state}from'../app.js?v=20260912-mobile';
 
 function passwordControl(placeholder=t('Password (8+ characters)')){
   const input=el('input',{type:'password',placeholder,autocomplete:'new-password'});

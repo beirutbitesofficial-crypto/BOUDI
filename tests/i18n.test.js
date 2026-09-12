@@ -29,6 +29,6 @@ test('Arabic defaults, English login, reversible switch, and safe interpolation'
 test('all relative JS imports use the same version, including cyclic app imports',()=>{
   for(const dir of [root,path.join(root,'pages')])for(const file of fs.readdirSync(dir).filter(f=>f.endsWith('.js'))){
     const source=fs.readFileSync(path.join(dir,file),'utf8');
-    for(const match of source.matchAll(/from\s*['"](\.[^'"]+)['"]/g))assert.ok(match[1].endsWith('?v=20260912-i18n'),`${file}: ${match[1]}`);
+    for(const match of source.matchAll(/from\s*['"](\.[^'"]+)['"]/g))assert.ok(match[1].endsWith('?v=20260912-mobile'),`${file}: ${match[1]}`);
   }
 });

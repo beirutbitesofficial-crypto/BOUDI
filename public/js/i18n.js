@@ -1,4 +1,4 @@
-import {arabicPhrases} from './phrases.js?v=20260912-i18n';
+import {arabicPhrases} from './phrases.js?v=20260912-mobile';
 // Internationalization: English + Arabic (RTL)
 export const translations = {
   en: {

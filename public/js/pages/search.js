@@ -1,6 +1,6 @@
-import { api } from '../api.js?v=20260912-i18n';
-import { t } from '../i18n.js?v=20260912-i18n';
-import { el, money, num, fmtDate, badge } from '../ui.js?v=20260912-i18n';
+import { api } from '../api.js?v=20260912-mobile';
+import { t } from '../i18n.js?v=20260912-mobile';
+import { el, money, num, fmtDate, badge } from '../ui.js?v=20260912-mobile';
 
 export async function renderSearch(root) {
   const input = el('input', { placeholder: t('search_placeholder'), 'data-i18n-ph': 'search_placeholder', style: 'font-size:16px;padding:14px' });

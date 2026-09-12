@@ -1,0 +1,58 @@
+/* Logical ordering follows Arabic/English without reversing it twice. */
+.topbar,html[dir=rtl] .topbar{flex-direction:row}
+#page-title{flex:1;min-width:0;font-size:20px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0;padding:0}
+.topbar-right,html[dir=rtl] .topbar-right{flex-direction:row;flex-shrink:0}
+.sidebar-brand,html[dir=rtl] .sidebar-brand,.nav-item,html[dir=rtl] .nav-item{flex-direction:row}
+.nav-item{text-align:start;min-height:46px}
+.nav-item>span:first-child{width:26px;text-align:center;flex-shrink:0}
+#menu-toggle svg{width:22px;height:22px;display:block;pointer-events:none}
+#menu-toggle{align-items:center;justify-content:center;flex-shrink:0}
+.sidebar-backdrop{display:none}
+.stat-value{font-variant-numeric:tabular-nums;overflow-wrap:anywhere;letter-spacing:0}
+.table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.history-line>*{min-width:0;overflow-wrap:anywhere}
+@media(max-width:1400px){
+  .topbar{padding:10px 14px;gap:12px;height:auto;min-height:66px}
+  #menu-toggle,html[dir=rtl] #menu-toggle{position:static;inset:auto;z-index:auto;display:flex;width:44px;height:44px;border-radius:12px}
+  .sidebar,html[dir=rtl] .sidebar{width:min(310px,86vw);height:100vh;height:100dvh;z-index:1001}
+  .sidebar .sidebar-brand{padding:22px 18px;padding-inline-end:62px;min-height:84px}
+  .sidebar .brand-logo{flex-shrink:0}
+  .sidebar .brand-name{font-size:17px;white-space:nowrap}
+  .sidebar .close-btn,html[dir=rtl] .sidebar .close-btn{top:20px;left:auto;right:auto;inset-inline-end:14px;width:44px;height:44px;border-radius:12px}
+  .sidebar .nav{gap:5px;padding:14px;overscroll-behavior:contain}
+  .sidebar .nav-item{font-size:15px;padding:12px}
+  .sidebar-footer{padding-bottom:max(16px,env(safe-area-inset-bottom))}
+  .app::before{display:none}
+  .sidebar-backdrop:not([hidden]){display:block;position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(3px);border:0;z-index:1000;cursor:pointer}
+  body.sidebar-open{overflow:hidden}
+}
+@media(max-width:600px){
+  .topbar{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px 12px;padding:10px 14px}
+  #page-title{font-size:21px;text-align:start}
+  .topbar-right,html[dir=rtl] .topbar-right{grid-column:1/-1;display:flex;gap:8px;min-width:0;justify-content:flex-start;flex-direction:row}
+  .topbar-right .chip-btn{height:36px;min-width:0;padding:6px 12px;font-size:13px;border-radius:10px;white-space:nowrap}
+  .topbar-right .currency-toggle{min-width:84px}
+  #user-avatar{margin-inline-start:auto;width:30px;height:30px;flex-shrink:0}
+  #user-name{font-size:12px;max-width:76px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:ltr}
+  .content{padding:14px}
+  .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .stats-grid .stat-card,html[dir=rtl] .stats-grid .stat-card{padding:14px;margin:0;display:flex;flex-direction:column;gap:8px;min-height:145px;text-align:start}
+  .stat-card .stat-ico,html[dir=rtl] .stat-card .stat-ico{position:static;width:34px;height:34px;font-size:18px;border-radius:10px}
+  .stat-label{font-size:12px;line-height:1.5}
+  .stat-value{font-size:21px;line-height:1.4;margin-top:auto}
+  .stat-sub{font-size:11px}
+  .content>.flex{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .content>.flex>input{flex:1 1 100%;min-width:0;width:100%;font-size:16px}
+  .content>.flex>.btn{flex:1 1 40%;min-width:0;width:auto;white-space:normal;min-height:44px}
+  .pill-tabs{max-width:100%;overflow-x:auto;flex-wrap:nowrap;gap:6px}
+  .pill-tabs button{flex-shrink:0;white-space:nowrap;min-height:44px;font-size:13px}
+  .table-wrap table{min-width:560px}
+  .history-line{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:12px 0;font-size:13px;text-align:start}
+  .history-line>small{grid-column:1/-1}
+  .content>.product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .product-admin-card{padding:12px}
+  .product-admin-card h3{font-size:17px;overflow-wrap:anywhere}
+  .product-admin-card p{font-size:13px;overflow-wrap:anywhere}
+  .product-card-actions .btn{width:100%;white-space:normal;min-height:40px}
+}
+@media(max-width:360px){.stats-grid,.content>.product-grid{grid-template-columns:1fr}}
