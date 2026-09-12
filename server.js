@@ -1,5 +1,5 @@
 try{require('dotenv').config();}catch{}
-require('./scripts/start-hostinger').prepareDataDirectory();
+require('./scripts/storage').prepareDataDirectory();
 const path=require('path');const express=require('express');const session=require('express-session');const cookieParser=require('cookie-parser');
 const {init,UPLOAD_DIR,db}=require('./db/database');const {ensureBarcodeSchema}=require('./db/barcode');init();ensureBarcodeSchema(db);
 const app=express(),PORT=process.env.PORT||5050,HOST=process.env.HOST||'0.0.0.0';app.set('trust proxy',1);

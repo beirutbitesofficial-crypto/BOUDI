@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const {prepareDataDirectory} = require('../scripts/start-hostinger');
+const {prepareDataDirectory} = require('../scripts/storage');
 
 test('redeploy and rollback use the same database and images without overwriting them', () => {
   const domain = fs.mkdtempSync(path.join(os.tmpdir(), 'boudi-storage-'));
